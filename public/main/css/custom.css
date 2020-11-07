@@ -1,0 +1,52 @@
+#headerwrap {
+  min-height: 350px;
+}
+
+.modal-title{
+  color: black;
+  font-weight: bold;
+}
+
+
+#portfoliowrap h3 {
+    margin-bottom: 15px;
+}
+.portfolio-item p {
+    margin: 0px 0px;
+    color: white;
+}
+.tpl6 .dmbutton {
+    display: inline-block;
+    margin: 10px 5px 20px 5px;
+}
+
+
+.post-box{
+  background-color: white;
+  padding: 25px;
+
+}
+#cwrap h3{
+  margin-bottom: 20px;
+}
+#cwrap .container{
+  max-width: 768px;
+}
+#cwrap img{
+  /* margin: 20px; */
+}
+.action{
+  display: block;
+  text-align: right !important;
+}
+.action:hover{
+  color: #00b3fe !important;
+}
+
+img.tumbnail{
+  height: 50px !important;
+}
+
+textarea{
+  min-height: 400px !important;
+}
