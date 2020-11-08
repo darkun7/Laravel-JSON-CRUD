@@ -36,7 +36,7 @@
       <!-- <h4>Project Details</h4> -->
       <div class="hline"></div>
       <p><b>Tanggal diunggah:</b> {{$konten['created']}}</p>
-      @if($konten != null)
+      @if($konten['updated'] != null)
       <p><b>Tanggal disunting:</b> {{$konten['updated']}}</p>
       @endif
       <p><b>Kontributor:</b> {{$konten['kontributor']}}</p>
