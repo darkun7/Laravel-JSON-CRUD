@@ -19,6 +19,10 @@ class ArticleController extends Controller
         if( isset($request->artikel) && !is_null($request->artikel) ){
             $edit = $request->artikel;
             $edit = Konten::find($edit);
+            if(is_null($edit)){
+              Session::flash('error', 'Konten tidak ditemukan');
+              return redirect()->route('home');
+            }
             // Cari artikel yg dituju
         }
         $visual = Konten::category('karya-visual');
@@ -63,6 +67,10 @@ class ArticleController extends Controller
     public function show($slug)
     {
         $konten = Konten::find($slug);
+        if(is_null($konten)){
+          Session::flash('error', 'Konten tidak ditemukan');
+          return redirect()->route('home');
+        }
         return view('show', compact('konten'));
     }
 
