@@ -1,23 +1,31 @@
 <?php
 namespace App\json;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
-
-define("KONTEN_PATH", "public/konten.json");
 
 class Konten {
+    public static function config() {
+        return [
+            "basepath"   => "storage/konten.json",
+        ];
+    }
 
     public static function read() {
-        if (Storage::disk('local')->has(KONTEN_PATH)) {
-             $konten = Storage::get(KONTEN_PATH);
-         }else{
-             $konten = Storage::disk('local')->put(KONTEN_PATH, json_encode([]));
-         }
-        $array  = json_decode($konten, true);
+          $config = Konten::config();
+          if( !file_exists($config['basepath']) ) {
+            $array = Array ();
+            $json = json_encode($array);
+            $fileStream = fopen($config['basepath'], 'w');
+            fwrite( $fileStream , $json);
+            fclose($fileStream);
+            $bytes = file_put_contents($config['basepath'], $json);
+          }
+          $konten = file_get_contents(base_path($config['basepath']));
+          $array  = json_decode($konten, true);
         return $array;
     }
 
     public static function find($slug) {
+        $config = Konten::config();
         $json = Konten::read();
         foreach ($json as $key => $value) {
             if( $value['slug'] == $slug ) {
@@ -28,6 +36,7 @@ class Konten {
     }
 
     public static function category($cat) {
+        $config = Konten::config();
         $json   = Konten::read();
         $array  = [];
         foreach ($json as $key => $value) {
@@ -38,25 +47,16 @@ class Konten {
         return $array;
     }
 
-    public static function upload_tumbnail(Request $request){
-      $fileName = date('YmdHis'). '-' . $request->judul . ".".$request->file('tumbnail')->getClientOriginalExtension();
-      $request->file('tumbnail')->storeAs('public/tumbnail', $fileName);
-      $path = 'storage/tumbnail/'.$fileName;
-      return $path;
-    }
-
     public static function store(Request $request) {
+        $config = Konten::config();
         $json = Konten::read();
         $images = 'main/img/portfolio/portfolio_0'.rand(1,9).'.jpg';
+        $destinationPath = 'uploads/tumbnail/';
         if ($request->file('tumbnail')) {
-            $images = Konten::upload_tumbnail($request);
+            $fileName = date('YmdHis'). '-' . md5($request->judul) . ".".$request->file('tumbnail')->getClientOriginalExtension();
+            $request->file('tumbnail')->move($destinationPath, $fileName);
+            $images = $destinationPath.$fileName;
         }
-        // $destinationPath = 'uploads/tumbnail/';
-        // if ($request->file('tumbnail')) {
-        //     $fileName = date('YmdHis'). '-' . md5($request->judul) . ".".$request->file('tumbnail')->getClientOriginalExtension();
-        //     $request->file('tumbnail')->move($destinationPath, $fileName);
-        //     $images = $destinationPath.$fileName;
-        // }
         $konten = array (
            'id'           => count($json)+1,
            'judul'        =>  $request->judul,
@@ -71,19 +71,23 @@ class Konten {
        );
        // $konten = json_encode($konten, JSON_PRETTY_PRINT);
        $json[] = $konten;
-       if( Storage::disk('local')->put(KONTEN_PATH,
-           json_encode($json, JSON_PRETTY_PRINT)) ) {
+       $json = json_encode($json, JSON_PRETTY_PRINT);
+       // array_push($json, $konten);
+       if( file_put_contents(base_path($config['basepath']), $json) ) {
            return true;
        }
        return false;
     }
 
     public static function update(Request $request, $slug) {
+          $config = Konten::config();
           $json   = Konten::read();
           $updateImg = false;
           if(isset($request['tumbnail'])) {
               if ($request->file('tumbnail')) {
-                  $images = Konten::upload_tumbnail($request);
+                  $fileName = date('YmdHis'). '-' . md5($request->judul) . ".".$request->file('tumbnail')->getClientOriginalExtension();
+                  $request->file('tumbnail')->move($destinationPath, $fileName);
+                  $images = $destinationPath.$fileName;
               }
               $updateImg = true;
           }
@@ -108,15 +112,15 @@ class Konten {
           if($updateImg){
             $json[$target]['tumbnail']   = $images;
           }
-          if( Storage::disk('local')->put(KONTEN_PATH,
-              json_encode($json, JSON_PRETTY_PRINT)) ) {
+          $json = json_encode($json, JSON_PRETTY_PRINT);
+          if( file_put_contents(base_path($config['basepath']), $json) ) {
               return true;
           }
           return false;
       }
 
       public static function delete(Request $request, $slug) {
-          //$config = Konten::config();
+            $config = Konten::config();
             $json   = Konten::read();
             $target = -1;
             foreach ($json as $key => $value) {
@@ -129,8 +133,8 @@ class Konten {
               return false;
             }
             unset($json[$target]);
-            if( Storage::disk('local')->put(KONTEN_PATH,
-                json_encode($json, JSON_PRETTY_PRINT)) ) {
+            $json = json_encode($json, JSON_PRETTY_PRINT);
+            if( file_put_contents(base_path($config['basepath']), $json) ) {
                 return true;
             }
             return false;
